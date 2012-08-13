@@ -1,0 +1,8 @@
+(domain D1 (1 2 3))
+(domain D2 (-5 -4 -3))
+(domain D3 (2 3))
+(int V1 D1)
+(int V2 D2)
+(int V3 D3)
+(int V4 D3)
+(weightedsum ( ( 1 V1 ) ( 1 V2 ) ( 1 V3 ) ( 1 V4 )) eq 1)
