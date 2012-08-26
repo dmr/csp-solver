@@ -17,7 +17,7 @@ import time
 
 tmp_folder=tempfile.gettempdir()
 
-from csp_solver import (do_solve, get_parser, variables_to_csp,
+from csp_solver import (do_solve, get_parser, weighted_sum_to_csp,
                         check_minisat_and_sugar_exist,
                         solve_csp)
 
@@ -134,7 +134,7 @@ def test_parser():
 
 
 @csp_test.test
-def test_variables_to_csp():
+def test_weighed_sum_problem():
     for args, expected_result in [
         (
             ([
@@ -148,9 +148,10 @@ def test_variables_to_csp():
                 )
             ),
     ]:
-        assert variables_to_csp(*args) == expected_result, "\n{0}\n!=\n{1}\n!".format(
-            variables_to_csp(*args), expected_result
-        )
+        assert weighted_sum_to_csp(*args) == expected_result, \
+            "\n{0}\n!=\n{1}\n!".format(
+                weighted_sum_to_csp(*args), expected_result
+            )
 
 
 @csp_test.test
@@ -193,7 +194,7 @@ try:
 
     csp_test.test(test_basic_scenarios_with_ramdisk_mounter)
 except ImportError:
-    print "Install https://github.com/dmr/ramdisk_mounter.git for more and faster tests"
+    print "Install https://github.com/dmr/ramdisk_mounter.git for faster CSP results"
 
 
 if __name__ == '__main__':

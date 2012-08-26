@@ -39,7 +39,7 @@ def check_minisat_and_sugar_exist(
     return minisat_path, sugarjar_path
 
 
-def variables_to_csp(variables, reference_value):
+def weighted_sum_to_csp(variables, reference_value):
     # (domain D1 (1 2 3))
     domain_tmpl = "(domain {domain_name} ({domain_values}))"
 
@@ -212,7 +212,7 @@ def do_solve(variables, reference_value, tmp_folder,
                                         'for temporary files.')
 
     b = time.time()
-    csp_content = variables_to_csp(variables=variables,
+    csp_content = weighted_sum_to_csp(variables=variables,
                                    reference_value=reference_value)
 
     # one step after another
