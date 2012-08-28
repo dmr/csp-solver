@@ -251,6 +251,17 @@ def do_solve(variables, reference_value, tmp_folder,
     return result
 
 
+def add_config_params_to_argparse_parser(parser):
+    parser.add_argument('-t','--tmp-folder', action="store",
+        type=str, help=('Location of folder for temporary files. '
+                        'Should be on a RAM-disk for performance'))
+    parser.add_argument('--minisat', action="store",
+        type=str, default='.', help="minisat2 binary to use")
+    parser.add_argument('--sugar-jar', action="store",
+        type=str, default='.', help="sugar.jar to use")
+    return parser
+
+
 def get_parser():
     import argparse
     parser = argparse.ArgumentParser()
@@ -258,33 +269,53 @@ def get_parser():
     parser.add_argument('-c', '--csp-file', action="append",
                         type=str, help="CSP file", required=True)
 
-    parser.add_argument('-t','--tmp-folder',
-                        action="store", default='tmp_folder',
-        type=str, help="Folder for cnf, map, output file")
     parser.add_argument('-k','--keep-tmpfiles',
-                        action="store_true", default=False,
+        action="store_true", default=False,
         help="Temporary files are stores after program execution")
 
-    parser.add_argument('--minisat', action="store",
-                        type=str, help="minisat2 binary to use")
-    parser.add_argument('--sugar-jar', action="store",
-                        type=str, help="sugar.jar to use")
-    return parser
+    return add_config_params_to_argparse_parser(parser)
+
+
+def get_valid_csp_solver_config(minisat_path, sugarjar_path, tmp_folder=None):
+    if tmp_folder:
+        folder = os.path.abspath(tmp_folder)
+        if not os.path.exists(folder):
+            raise Exception("Please pass existing tmp-folder, '%s'"
+                            "does not exist" % folder)
+    else:
+        import tempfile
+        folder = tempfile.gettempdir()
+
+    if not minisat_path:
+        raise Exception('Please pass path of the minisat binary')
+    minisat_path = os.path.abspath(minisat_path)
+    if not os.path.exists(minisat_path):
+        raise Exception("minisat binary does not exist: %s"
+            % minisat_path)
+
+    if not sugarjar_path:
+        raise Exception('Please pass path of the sugar.jar binary')
+    sugarjar_path = os.path.abspath(sugarjar_path)
+    if not os.path.exists(sugarjar_path):
+        raise Exception("sugar.jar binary does not exist: %s"
+        % sugarjar_path)
+
+    return dict(
+        minisat_path=minisat_path,
+        sugarjar_path=sugarjar_path,
+        tmp_folder=folder
+    )
 
 
 if __name__ == '__main__':
     parser = get_parser()
     import sys
-    args = parser.parse_args(sys.argv[1:])
+    parsed_args = parser.parse_args(sys.argv[1:])
 
-    if not os.path.exists(args.tmp_folder):
-        print "Creating folder for temp files:", args.tmp_folder
-        os.mkdir(args.tmp_folder)
-    else:
-        print "Temp folder", args.tmp_folder
-    print
+    csp_solver_config = get_valid_csp_solver_config(parsed_args.minisat,
+        parsed_args.sugar_jar, parsed_args.tmp_folder)
 
-    for csp_file in args.csp_file:
+    for csp_file in parsed_args.csp_file:
         print ">>> Processing",csp_file
         assert os.path.isfile(csp_file)
         csp_file = os.path.abspath(csp_file)
@@ -293,11 +324,10 @@ if __name__ == '__main__':
             time.time())
         solve_csp_time, result = solve_csp(csp_file=csp_file,
                unique_repr=unique_repr,
-               tmp_folder=args.tmp_folder,
-               remove_tmp_files=not args.keep_tmpfiles,
+               remove_tmp_files=not parsed_args.keep_tmpfiles,
                quiet=True,
-               minisat_path=args.minisat_path,
-               sugarjar_path=args.sugarjar_path)
+               **csp_solver_config
+        )
         print "SATISFIABLE" if result.pop('satisfiable') \
             else "UNSATISFIABLE!", 'Took', solve_csp_time
         import pprint
