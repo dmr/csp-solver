@@ -1,0 +1,20 @@
+language: python
+python:
+  - "2.7"
+
+install:
+  - python setup.py -q install
+  - pip install -r requirements-test.txt --use-mirrors
+
+script: python setup.py test
+
+#before_script: make before
+#after_script:  another_command
+
+before_install:
+ - make minisat
+
+notifications:
+  email:
+    recipients:
+      - dr@nwebs.de
