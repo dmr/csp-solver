@@ -4,12 +4,9 @@ python:
 
 install:
   - python setup.py -q install
-  - pip install -r requirements-test.txt --use-mirrors
+  - pip install -r requirements_test.txt --use-mirrors
 
 script: python setup.py test
-
-#before_script: make before
-#after_script:  another_command
 
 before_install:
  - make minisat
