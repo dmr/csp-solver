@@ -258,15 +258,10 @@ def get_valid_csp_solver_config(
         tmp_folder=None
     ):
 
-    if tmp_folder:
-        folder = os.path.abspath(tmp_folder)
-    else:
-        import tempfile
-        folder = tempfile.gettempdir()
-    if not os.path.exists(folder):
+    if (not sugarjar_path or
+        not os.path.exists(sugarjar_path)):
         raise ConfigurationException(
-            "Please pass existing tmp-folder, '%s'"
-                        "does not exist" % folder
+            "Please pass existing sugar.jar"
         )
 
     if minisat_path and os.path.exists(minisat_path):
@@ -284,9 +279,15 @@ def get_valid_csp_solver_config(
                 "or install minisat2 as 'minisat' in PATH"
             )
 
-    if not os.path.exists(sugarjar_path):
+    if tmp_folder:
+        folder = os.path.abspath(tmp_folder)
+    else:
+        import tempfile
+        folder = tempfile.gettempdir()
+    if not os.path.exists(folder):
         raise ConfigurationException(
-            "Please pass existing sugar.jar"
+            "Please pass existing tmp-folder, '%s'"
+            "does not exist" % folder
         )
 
     return dict(
@@ -331,15 +332,15 @@ def get_parser():
     return add_csp_config_params_to_argparse_parser(parser)
 
 
-if __name__ == '__main__':
+def run():
     parser = get_parser()
     import sys
     parsed_args = parser.parse_args(sys.argv[1:])
 
     csp_solver_config = get_valid_csp_solver_config(
-        parsed_args.minisat,
-        parsed_args.sugar_jar,
-        parsed_args.tmp_folder
+        minisat_path=parsed_args.minisat,
+        sugarjar_path=parsed_args.sugar_jar,
+        tmp_folder=parsed_args.tmp_folder
     )
 
     for csp_file in parsed_args.csp_file:
@@ -356,8 +357,12 @@ if __name__ == '__main__':
             quiet=True,
             csp_solver_config=csp_solver_config
         )
-        print "SATISFIABLE" if result.pop('satisfiable') \
-            else "UNSATISFIABLE!", 'Took', solve_csp_time
+        print "SATISFIABLE" if result.pop('satisfiable')\
+        else "UNSATISFIABLE!", 'Took', solve_csp_time
         import pprint
         pprint.pprint(result)
         print
+
+
+if __name__ == '__main__':
+    run()
