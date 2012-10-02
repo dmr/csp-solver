@@ -6,10 +6,10 @@ install:
   - python setup.py -q install
   - pip install -r requirements_test.txt --use-mirrors
 
-script: python setup.py test
+script: PATH="$HOME/bin:$PATH" python setup.py test
 
 before_install:
- - make minisat
+ - make minisat_to_home_bin
 
 notifications:
   email:

@@ -3,6 +3,7 @@ minisat:
 	cd minisat && make config prefix=.
 	cd minisat && make
 	cd minisat && make install
+
+minisat_to_home_bin: minisat
 	mkdir -p ~/bin
-	env
 	cp minisat/bin/minisat ~/bin/
