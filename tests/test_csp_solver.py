@@ -10,20 +10,34 @@ def test_csp_solver_is_installed():
 import os
 import argparse
 
-from csp_solver import (do_solve, get_parser, weighted_sum_to_csp,
-                        get_valid_csp_solver_config,
-                        solve_csp)
-
-
-csp_solver_config = get_valid_csp_solver_config(
-    sugarjar_path=os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__),
-            'sugar-v1-15-0.jar'
-        )
-    )
+from csp_solver import (
+    do_solve,
+    get_parser,
+    weighted_sum_to_csp,
+    get_valid_csp_solver_config,
+    solve_csp,
+    run
 )
 
+
+sugarjar_path = os.path.abspath(
+    os.path.join(
+        os.path.dirname(__file__),
+        'sugar-v1-15-0.jar'
+    )
+)
+csp_solver_config = get_valid_csp_solver_config(
+    sugarjar_path=sugarjar_path
+)
+
+sample_csp_file_solvable = os.path.abspath(os.path.join(
+    os.path.dirname(__file__),
+    'simple_example_solvable.csp')
+)
+sample_csp_file_not_solvable = os.path.abspath(os.path.join(
+    os.path.dirname(__file__),
+    'simple_example_not_solvable.csp')
+)
 
 class TestBasicScenarios(unittest.TestCase):
     def test_not_satisfiable(self):
@@ -131,31 +145,55 @@ class TestBasicScenarios(unittest.TestCase):
         #'0.138674'
 
 
-class TestCliParser(unittest.TestCase):
-    def test_raises_error_if_missing_args(self):
+
+
+class TestCli(unittest.TestCase):
+    def test_parser_raises_error_if_missing_args(self):
         parser = get_parser()
         self.failUnlessRaises(
             SystemExit,
             parser.parse_args,
-            '--csp-file a -c b -k -t r'.split()
+            '--csp-file {0} -c b -k -t r'.format(
+                sample_csp_file_solvable
+            ).split()
         )
 
-    def test_works_if_input_ok(self):
+    def test_parser_works_if_input_ok(self):
         parser = get_parser()
 
         parsed_args = parser.parse_args(
-            '--csp-file a -c b -k -t r '
-            '--sugar-jar sugar-v1-15-0.jar'.split()
+            '--csp-file {0} -k -t r '
+            '--sugar-jar sugar-v1-15-0.jar'.format(
+                sample_csp_file_solvable
+            ).split()
         )
 
         expected_result = argparse.Namespace(
-            csp_file=['a', 'b'],
+            csp_file=[
+                sample_csp_file_solvable
+            ],
             keep_tmpfiles=True,
             minisat=None,
             sugar_jar='sugar-v1-15-0.jar',
             tmp_folder='r',
         )
         assert parsed_args == expected_result, parsed_args
+
+    def test_cli_prints_results_satisfiable(self):
+        run(
+            '-c {0} --sugar-jar {1}'.format(
+                sample_csp_file_solvable,
+                sugarjar_path
+            ).split()
+        )
+
+    def test_cli_prints_results_satisfiable(self):
+        run(
+            '-c {0} --sugar-jar {1}'.format(
+                sample_csp_file_not_solvable,
+                sugarjar_path
+            ).split()
+        )
 
 
 def test_weighed_sum_problem_gets_converted_to_csp():
@@ -179,18 +217,17 @@ def test_weighed_sum_problem_gets_converted_to_csp():
 
 
 class TestSolveCsp(unittest.TestCase):
-    def test_passes_and_returns_expected_result(self):
+    def test_passes_and_returns_solvable(self):
         result = solve_csp(
-            csp_file=os.path.abspath(os.path.join(
-                os.path.dirname(__file__),
-                'simple_example.csp')),
+            csp_file=sample_csp_file_solvable,
             remove_tmp_files=True,
             csp_solver_config=csp_solver_config
         )
         self.failUnlessEqual(len(result),2)
         print result[0]
 
-        assert set(result[1].keys()) == \
+        self.failUnlessEqual(
+            set(result[1].keys()),
             set([
                 'minisat_cpu_time',
                 'csp_to_cnf_time',
@@ -200,7 +237,33 @@ class TestSolveCsp(unittest.TestCase):
                 'satisfiable_bool',
                 'cnf_file_size'
             ])
+        )
+        self.failUnlessEqual(
+            result[1]['satisfiable_bool'],
+            True
+        )
 
+    def test_passes_and_returns_not_solvable(self):
+        result = solve_csp(
+            csp_file=sample_csp_file_not_solvable,
+            remove_tmp_files=True,
+            csp_solver_config=csp_solver_config
+        )
+        self.failUnlessEqual(len(result),2)
+        print result[0]
+
+        self.failUnlessEqual(
+            set(result[1].keys()),
+            set([
+                'csp_to_cnf_time',
+                'solution_list',
+                'satisfiable_bool'
+            ])
+        )
+        self.failUnlessEqual(
+            result[1]['satisfiable_bool'],
+            False
+        )
 
 
 def test_minisat_is_deterministic():

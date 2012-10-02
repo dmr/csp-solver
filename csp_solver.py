@@ -319,9 +319,18 @@ def add_csp_config_params_to_argparse_parser(parser):
 def get_parser():
     parser = argparse.ArgumentParser()
 
+    def existing_file(file_name):
+        if not file_name:
+            raise argparse.ArgumentTypeError("File does not exist: {0}".format(file_name))
+        if not os.path.exists(file_name):
+            raise argparse.ArgumentTypeError("File does not exist: {0}".format(file_name))
+        if not os.path.isfile(file_name):
+            raise argparse.ArgumentTypeError("File does not exist: {0}".format(file_name))
+        return os.path.abspath(file_name)
+
     parser.add_argument('-c', '--csp-file',
         action="append",
-        type=str, help="CSP file",
+        type=existing_file, help="CSP file",
         required=True
     )
     parser.add_argument('-k','--keep-tmpfiles',
@@ -332,10 +341,9 @@ def get_parser():
     return add_csp_config_params_to_argparse_parser(parser)
 
 
-def run():
+def run(args):
     parser = get_parser()
-    import sys
-    parsed_args = parser.parse_args(sys.argv[1:])
+    parsed_args = parser.parse_args(args)
 
     csp_solver_config = get_valid_csp_solver_config(
         minisat_path=parsed_args.minisat,
@@ -345,8 +353,6 @@ def run():
 
     for csp_file in parsed_args.csp_file:
         print ">>> Processing",csp_file
-        assert os.path.isfile(csp_file)
-        csp_file = os.path.abspath(csp_file)
         unique_repr = u'{0}_{1}'.format(
             os.path.basename(csp_file), #split path
             time.time())
@@ -357,7 +363,7 @@ def run():
             quiet=True,
             csp_solver_config=csp_solver_config
         )
-        print "SATISFIABLE" if result.pop('satisfiable')\
+        print "SATISFIABLE" if result.pop('satisfiable_bool')\
         else "UNSATISFIABLE!", 'Took', solve_csp_time
         import pprint
         pprint.pprint(result)
@@ -365,4 +371,5 @@ def run():
 
 
 if __name__ == '__main__':
-    run()
+    import sys
+    run(sys.argv[1:])
