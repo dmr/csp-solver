@@ -2,11 +2,12 @@
 import functools
 import hashlib
 import os
-import subprocess
 import time
-
 import argparse
 import which
+
+# import backport instead of packaged version
+import subprocess32 as subprocess
 
 
 def time_diff(func):

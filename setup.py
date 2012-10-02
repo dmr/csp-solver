@@ -15,7 +15,8 @@ setup(
     scripts=['csp_solver.py'],
     install_requires=[
         'argparse',
-        'which'
+        'which',
+        'subprocess32'
     ],
     zip_safe=False,
     platforms='any',

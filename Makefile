@@ -5,5 +5,6 @@ minisat:
 	cd minisat && make install
 
 minisat_to_home_bin: minisat
+	pwd
 	mkdir -p ~/bin
 	cp minisat/bin/minisat ~/bin/
