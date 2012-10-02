@@ -131,8 +131,16 @@ def solve_csp(csp_file,
         # 800 Actors range_size 15 needs more than 2GB memory!
         minisat_cmd = [minisat_path, '-verbosity=0', cnf_file, out_file]
         b = time.time()
-        minisat_resp = subprocess.check_output(
-            minisat_cmd, stderr=subprocess.STDOUT)
+
+        try:
+            minisat_resp = subprocess.check_output(
+                minisat_cmd, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as exc:
+            print exc.cmd
+            print exc.returncode
+            print exc.message
+            raise
+
         result['minisat_time'] = time.time() - b
 
         solvable_bool = minisat_resp.splitlines()[-1]
