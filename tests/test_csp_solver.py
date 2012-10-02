@@ -1,140 +1,164 @@
 # -*- coding: utf-8 -*-
-from attest import Tests
+import unittest
 
-csp_test = Tests()
 
-@csp_test.test
-def is_installed():
+def test_csp_solver_is_installed():
     import csp_solver
     assert csp_solver.do_solve
 
 
-import argparse
-import datetime
 import os
-import tempfile
-import time
-
-tmp_folder=tempfile.gettempdir()
+import argparse
 
 from csp_solver import (do_solve, get_parser, weighted_sum_to_csp,
-                        check_minisat_and_sugar_exist,
+                        get_valid_csp_solver_config,
                         solve_csp)
 
-folder = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                          'test_csp_solver_tmp'))
 
-quiet = False
-
-
-minisat_path = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), 'minisat'))
-sugarjar_path = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), 'sugar-v1-15-0.jar'))
-_m, _s = check_minisat_and_sugar_exist(minisat_path, sugarjar_path)
-
-
-@csp_test.test
-def test_basic_scenarios():
-    basic_scenarios(tmp_folder)
-
-
-def basic_scenarios(folder):
-    before = datetime.datetime.now()
-
-    quiet = True
-
-    kw = dict(tmp_folder=folder, quiet=quiet,
-              minisat_path=minisat_path, sugarjar_path=sugarjar_path
+csp_solver_config = get_valid_csp_solver_config(
+    sugarjar_path=os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            'sugar-v1-15-0.jar'
+        )
     )
-
-    result = do_solve(variables=[[1,2]], reference_value=1, **kw)
-    assert 'satisfiable_bool' in result and result['satisfiable_bool'] == True, result
-    assert result['solution_list'] == [1], result
-    # (True, [1], '0.000595')
-
-    result = do_solve(variables=[[1,2], [1,2]], reference_value=4, **kw)
-    assert result['satisfiable_bool'] == True
-    assert result['solution_list'] == [2, 2]
-    # (True, [2, 2], '0.000599')
-
-    result = do_solve(variables=[[1,2], [1,2]], reference_value=5, **kw)
-    assert result['satisfiable_bool'] == False, result['satisfiable_bool']
-    # is not a minisat result, sugar returns that!
-    assert result['solution_list'] == None, result['solution_list']
-    # minisat returns (None, None, None)
-
-    result = do_solve(variables=[
-            [-1, 0, 1], [-1,-2,-3], [-1, 0, 1], [-1,-2,-3]
-    ], reference_value=0, **kw)
-    assert result['satisfiable_bool'] == True
-    assert result['solution_list'] == [1, -1, 1, -1]
-    # (True, [1, -1, 1, -1], '0.000659')
-
-    result = do_solve(variables=[
-        [1,2], [-1,-2,-3], [1,2,3], [-1,-2,-3], [1,2,3],
-        [-1,-3,-2], [1,2,3], [-1,-2,-3],
-    ], reference_value=0, **kw)
-    assert result['satisfiable_bool'] == True
-    assert result['solution_list'] == [2, -3, 1, -1, 2, -3, 3, -1]
-    # (True, [2, -3, 1, -1, 2, -3, 3, -1], '0.000856')
-
-    actors_40 = [[1,2] for i in range(20)]
-    actors_40.extend([[-1,-2,-3] for i in range(20)])
-    result = do_solve(variables=actors_40, reference_value=0, **kw)
-    assert result['satisfiable_bool'] == True
-    assert result['solution_list'] == [-1, -1, -1, -3, 2, -3, -1, -1, -3, -1,
-       -1, 2, 1, 2, 1, 2, 2, 1, 2, 2, -1, -3, -3, -1, 2, 2, -1, -1, -3, -1,
-       2, 2, 2, 1, 2, 1, 1, 2, -1, -3], result['solution_list']
-
-    actors_400 = [[1,2] for i in range(200)]
-    actors_400.extend([[-1,-2,-3] for i in range(200)])
-    result = do_solve(variables=actors_400, reference_value=0, **kw)
-    assert result['satisfiable_bool'] == True
-    assert result['solution_list'] == [-1, -1, -1, -1, -3, -1, -1, -3, -1,
-       -3, -1, -1, -3, -1, -1, -3, -1, 1, 2, 2, 1, 2, 2, 2, 2, 1, 2, 1, 2, 2,
-       1, 2, 1, 2, 2, 1, 2, 2, -3, -1, -1, -3, -1, -1, -1, -1, -3, -1, -3, -1,
-       -3, -1, -1, -3, -1, -3, -1, -1, -1, -3, -1, -1, -3, -1, -1, -3, -3, -1,
-       -3, -3, 2, 1, 2, 1, 1, 2, 1, 2, 2, 2, 2, -1, -1, 2, 2, 2, 2, -1, 2, 2,
-       -1, -1, 1, 2, 2, 2, 2, 1, -1, -1, -1, -1, -3, -1, -1, -1, -1, 2, 2, 2,
-       1, 1, 2, 2, 2, 2, 1, -1, -3, -3, -1, -1, -1, -1, -1, -3, -1, -1, -3,
-       -1, -1, -3, -1, 2, 2, 1, 2, 1, 2, 2, 1, 2, 2, 2, 1, 2, 1, 1, 2, -3, -1,
-       -1, -1, -1, -1, -1, -3, -3, -1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 1, 1, -3,
-       -1, -1, -3, -1, -3, -3, -1, -3, -1, -1, -1, -1, -3, 1, 2, 2, 2, 2, 2,
-       2, 1, 2, 1, -1, -3, -3, -1, -1, -1, -1, -3, -1, -1, 1, 2, 2, 2, 2, 1,
-       1, 2, -1, -1, -1, -3, -1, -3, 2, 1, -3, -1, 1, 2, 2, 2, 2, 1, 2, 2, 1,
-       2, -3, -3, -1, -1, -1, -1, 1, 2, 2, 2, 1, 2, 2, 1, 2, 1, 2, 2, 2, 1,
-       1, 2, 2, 2, 1, 2, 2, 1, 2, 1, 1, 2, 2, 2, 2, 1, -1, -1, 2, -3, 2, 1,
-       1, 2, -1, -3, 2, 2, 2, 2, 1, 2, 2, 1, 2, 2, 2, 1, -1, -1, -3, -1, -1,
-       -1, -1, -3, -1, -3, -3, -1, -3, -1, -1, -1, 2, 2, 1, 2, 2, 1, 2, 2, 1,
-       2, 2, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, -1, -3, -3, -1, -1, -1, -1, -3,
-       -3, -1, -3, -3, -1, -1, -1, -3, -1, -1, -3, -1, -1, -1, -3, -3, -1,
-       -3, -1, -1, -1, -1, -1, -3, -1, -1, -3, 1, -3, -1, -1, -1, -1, 2, -3,
-       2, 2, 1, 2, 2, 1, 2, 2, -1, 1, -1, -1, -1, -3, -1, -3, -3, -1, 1, 2,
-       2, 1, 2, 2, 1, 2, 2, 1, -1, -3], result['solution_list']
-    #'0.138674'
-    print "took", datetime.datetime.now() - before
+)
 
 
-@csp_test.test
-def test_parser():
-    parser = get_parser()
-    def test_args(arg_string, expected_result):
-        assert parser.parse_args(arg_string) == expected_result, \
-            parser.parse_args(arg_string)
+class TestBasicScenarios(unittest.TestCase):
+    def test_not_satisfiable(self):
+        result = do_solve(
+            variables=[[1,2], [1,2]],
+            reference_value=5,
+            csp_solver_config=csp_solver_config
+        )
+        assert result['satisfiable_bool'] == False, \
+            result['satisfiable_bool']
+        # is not a minisat result, sugar returns that!
+        assert result['solution_list'] == None, result['solution_list']
+        # minisat returns (None, None, None)
 
-    test_args('--csp-file a -c b -k -t r'.split(),
-              argparse.Namespace(
-                csp_file=['a', 'b'], keep_tmpfiles=True, tmp_folder='r',
-                minisat=None, sugar_jar=None
-              )
-    )
+    def test_is_satisfiable1(self):
+        result = do_solve(
+            variables=[[1,2]],
+            reference_value=1,
+            csp_solver_config=csp_solver_config
+        )
+        assert ('satisfiable_bool' in result and
+                result['satisfiable_bool'] == True), result
+        assert result['solution_list'] == [1], result
+        # (True, [1], '0.000595')
 
-    # TODO: test more
+    def test_is_satisfiable2(self):
+        result = do_solve(
+            variables=[[1,2], [1,2]],
+            reference_value=4,
+            csp_solver_config=csp_solver_config
+        )
+        assert result['satisfiable_bool'] == True
+        assert result['solution_list'] == [2, 2]
+        # (True, [2, 2], '0.000599')
+
+    def test_is_satisfiable3(self):
+        result = do_solve(
+            variables=[
+                [-1, 0, 1], [-1,-2,-3], [-1, 0, 1], [-1,-2,-3]
+            ],
+            reference_value=0,
+            csp_solver_config=csp_solver_config
+        )
+        assert result['satisfiable_bool'] == True
+        assert result['solution_list'] == [1, -1, 1, -1]
+        # (True, [1, -1, 1, -1], '0.000659')
+
+    def test_is_satisfiable4(self):
+        result = do_solve(
+            variables=[
+                [1,2], [-1,-2,-3], [1,2,3], [-1,-2,-3], [1,2,3],
+                [-1,-3,-2], [1,2,3], [-1,-2,-3],
+            ],
+            reference_value=0,
+            csp_solver_config=csp_solver_config
+        )
+        assert result['satisfiable_bool'] == True
+        assert result['solution_list'] == [2, -3, 1, -1, 2, -3, 3, -1]
+        # (True, [2, -3, 1, -1, 2, -3, 3, -1], '0.000856')
+
+    def test_is_satisfiable_big_problem(self):
+        actors_40 = [[1,2] for i in range(20)]
+        actors_40.extend([[-1,-2,-3] for i in range(20)])
+        result = do_solve(
+            variables=actors_40,
+            reference_value=0,
+            csp_solver_config=csp_solver_config
+        )
+        assert result['satisfiable_bool'] == True
+        assert result['solution_list'] == [-1, -1, -1, -3, 2,
+           -3, -1, -1, -3, -1, -1, 2, 1, 2, 1, 2, 2, 1, 2, 2,
+           -1, -3, -3, -1, 2, 2, -1, -1, -3, -1,
+           2, 2, 2, 1, 2, 1, 1, 2, -1, -3], result['solution_list']
+
+    def test_is_satisfiable_bigger_problem(self):
+        actors_400 = [[1,2] for i in range(200)]
+        actors_400.extend([[-1,-2,-3] for i in range(200)])
+        result = do_solve(
+            variables=actors_400,
+            reference_value=0,
+            csp_solver_config=csp_solver_config
+        )
+        assert result['satisfiable_bool'] == True
+        assert result['solution_list'] == [-1, -1, -1, -1, -3, -1, -1, -3, -1,
+           -3, -1, -1, -3, -1, -1, -3, -1, 1, 2, 2, 1, 2, 2, 2, 2, 1, 2, 1, 2, 2,
+           1, 2, 1, 2, 2, 1, 2, 2, -3, -1, -1, -3, -1, -1, -1, -1, -3, -1, -3, -1,
+           -3, -1, -1, -3, -1, -3, -1, -1, -1, -3, -1, -1, -3, -1, -1, -3, -3, -1,
+           -3, -3, 2, 1, 2, 1, 1, 2, 1, 2, 2, 2, 2, -1, -1, 2, 2, 2, 2, -1, 2, 2,
+           -1, -1, 1, 2, 2, 2, 2, 1, -1, -1, -1, -1, -3, -1, -1, -1, -1, 2, 2, 2,
+           1, 1, 2, 2, 2, 2, 1, -1, -3, -3, -1, -1, -1, -1, -1, -3, -1, -1, -3,
+           -1, -1, -3, -1, 2, 2, 1, 2, 1, 2, 2, 1, 2, 2, 2, 1, 2, 1, 1, 2, -3, -1,
+           -1, -1, -1, -1, -1, -3, -3, -1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 1, 1, -3,
+           -1, -1, -3, -1, -3, -3, -1, -3, -1, -1, -1, -1, -3, 1, 2, 2, 2, 2, 2,
+           2, 1, 2, 1, -1, -3, -3, -1, -1, -1, -1, -3, -1, -1, 1, 2, 2, 2, 2, 1,
+           1, 2, -1, -1, -1, -3, -1, -3, 2, 1, -3, -1, 1, 2, 2, 2, 2, 1, 2, 2, 1,
+           2, -3, -3, -1, -1, -1, -1, 1, 2, 2, 2, 1, 2, 2, 1, 2, 1, 2, 2, 2, 1,
+           1, 2, 2, 2, 1, 2, 2, 1, 2, 1, 1, 2, 2, 2, 2, 1, -1, -1, 2, -3, 2, 1,
+           1, 2, -1, -3, 2, 2, 2, 2, 1, 2, 2, 1, 2, 2, 2, 1, -1, -1, -3, -1, -1,
+           -1, -1, -3, -1, -3, -3, -1, -3, -1, -1, -1, 2, 2, 1, 2, 2, 1, 2, 2, 1,
+           2, 2, 2, 2, 1, 2, 2, 1, 2, 2, 1, 2, -1, -3, -3, -1, -1, -1, -1, -3,
+           -3, -1, -3, -3, -1, -1, -1, -3, -1, -1, -3, -1, -1, -1, -3, -3, -1,
+           -3, -1, -1, -1, -1, -1, -3, -1, -1, -3, 1, -3, -1, -1, -1, -1, 2, -3,
+           2, 2, 1, 2, 2, 1, 2, 2, -1, 1, -1, -1, -1, -3, -1, -3, -3, -1, 1, 2,
+           2, 1, 2, 2, 1, 2, 2, 1, -1, -3], result['solution_list']
+        #'0.138674'
 
 
-@csp_test.test
-def test_weighed_sum_problem():
+class TestCliParser(unittest.TestCase):
+    def test_raises_error_if_missing_args(self):
+        parser = get_parser()
+        self.failUnlessRaises(
+            SystemExit,
+            parser.parse_args,
+            '--csp-file a -c b -k -t r'.split()
+        )
+
+    def test_works_if_input_ok(self):
+        parser = get_parser()
+
+        parsed_args = parser.parse_args(
+            '--csp-file a -c b -k -t r '
+            '--sugar-jar sugar-v1-15-0.jar'.split()
+        )
+
+        expected_result = argparse.Namespace(
+            csp_file=['a', 'b'],
+            keep_tmpfiles=True,
+            minisat=None,
+            sugar_jar='sugar-v1-15-0.jar',
+            tmp_folder='r',
+        )
+        assert parsed_args == expected_result, parsed_args
+
+
+def test_weighed_sum_problem_gets_converted_to_csp():
     for args, expected_result in [
         (
             ([
@@ -154,48 +178,45 @@ def test_weighed_sum_problem():
             )
 
 
-@csp_test.test
-def test_do_solve():
-    solve_csp(
-        csp_file=os.path.abspath(os.path.join(
-            os.path.dirname(__file__), 'simple_example.csp')),
-        tmp_folder=tmp_folder,
-        remove_tmp_files=True,
-        minisat_path=minisat_path, sugarjar_path=sugarjar_path
-    )
+class TestSolveCsp(unittest.TestCase):
+    def test_passes_and_returns_expected_result(self):
+        result = solve_csp(
+            csp_file=os.path.abspath(os.path.join(
+                os.path.dirname(__file__),
+                'simple_example.csp')),
+            remove_tmp_files=True,
+            csp_solver_config=csp_solver_config
+        )
+        self.failUnlessEqual(len(result),2)
+        print result[0]
+
+        assert set(result[1].keys()) == \
+            set([
+                'minisat_cpu_time',
+                'csp_to_cnf_time',
+                'minisat_time',
+                'map_file_size',
+                'solution_list',
+                'satisfiable_bool',
+                'cnf_file_size'
+            ])
 
 
-try:
-    import ramdisk_mounter
 
-    def test_basic_scenarios_with_ramdisk_mounter():
-        with ramdisk_mounter.ramdisk(folder=tmp_folder) as folder:
-            basic_scenarios(folder)
+def test_minisat_is_deterministic():
+    for _ in range(20):
+        result = do_solve(
+            variables=[
+                [-1, 0, 1], [-1, 0, 1], [-1, 0, 1], [-1, 0, 1],
+            ],
+            reference_value=0,
+            quiet=False,
+            csp_solver_config=csp_solver_config
+        )
 
-    def test_if_minisat_is_deterministic():
-        with ramdisk_mounter.ramdisk(folder=tmp_folder) as folder:
-            for _ in range(10):
-                b = time.time()
-                result = do_solve(
-                    variables=[
-                        [-1, 0, 1], [-1, 0, 1], [-1, 0, 1], [-1, 0, 1],
-                    ],
-                    reference_value=0,
-                    tmp_folder=folder, quiet=quiet,
-                    minisat_path=minisat_path, sugarjar_path=sugarjar_path
-                )
-                print "Took:",time.time() - b
-
-                # possible solutions:
-                #[0,0,0,0], [-1,-1,1,1]...
-                assert result['satisfiable_bool'] == True
-                assert result['solution_list'] == [0, -1, 0, 1], result['solution_list']
-                # (True, [1, -1, 1, -1], '0.000659')
-
-    csp_test.test(test_basic_scenarios_with_ramdisk_mounter)
-except ImportError:
-    print "Install https://github.com/dmr/ramdisk_mounter.git for faster CSP results"
-
-
-if __name__ == '__main__':
-    csp_test.run()
+        # possible solutions:
+        #[0,0,0,0], [-1,-1,1,1]...
+        assert result['satisfiable_bool'] == True
+        assert result['solution_list'] == [0, -1, 0, 1], \
+            result['solution_list']
+        # (True, [1, -1, 1, -1], '0.000659')
