@@ -252,6 +252,8 @@ class TestSolveCsp(unittest.TestCase):
         self.failUnlessEqual(len(result),2)
         print result[0]
 
+        # csp to cnf reports unsolvable
+        # --> minisat is not triggered!
         self.failUnlessEqual(
             set(result[1].keys()),
             set([
@@ -264,6 +266,8 @@ class TestSolveCsp(unittest.TestCase):
             result[1]['satisfiable_bool'],
             False
         )
+
+    # TODO: include test where minisat returns unsatisfiable
 
 
 def test_minisat_is_deterministic():

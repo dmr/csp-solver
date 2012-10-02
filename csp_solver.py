@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import functools
 import hashlib
 import os
@@ -182,7 +181,6 @@ def solve_csp(csp_file,
         if remove_tmp_files:
             os.remove(cnf_file)
             os.remove(map_file)
-
     return result
 
 
