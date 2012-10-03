@@ -14,9 +14,8 @@ before_install:
  - unzip minisat2-070721.zip
  - cd minisat/core && make
  - cd -
- - mv minisat/core/minisat minisat_bin
+ - mv minisat/core/minisat tests/
  - rm -Rf minisat
- - mv minisat_bin minisat
 
 notifications:
   email:
