@@ -11,8 +11,7 @@ script: python setup.py test
 
 before_install:
  - git clone https://github.com/niklasso/minisat.git
- - cd minisat && make config prefix=/usr && make
- - cd minisat && sudo make install
+ - cd minisat && make config prefix=/usr && make && sudo make install
 
 notifications:
   email:
