@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import functools
 import hashlib
+import sys
 import os
 import time
 import argparse
@@ -73,14 +74,15 @@ def weighted_sum_to_csp(variables, reference_value):
 
 
 @time_diff
-def solve_csp(csp_file,
-              remove_tmp_files,
+def solve_csp(
+        csp_file,
+        remove_tmp_files,
 
-              csp_solver_config,
+        csp_solver_config,
 
-              unique_repr=None,
-              quiet=True,
-    ):
+        unique_repr=None,
+        quiet=True,
+        ):
 
     csp_solver_config = get_valid_csp_solver_config(**csp_solver_config)
 
@@ -193,13 +195,12 @@ def solve_csp(csp_file,
     return result
 
 
-def do_solve(variables,
-             reference_value,
-
-             csp_solver_config,
-
-             remove_tmp_files=True,
-             quiet=True,
+def do_solve(
+        variables,
+         reference_value,
+         csp_solver_config,
+         remove_tmp_files=True,
+         quiet=True,
          ):
 
     csp_solver_config = get_valid_csp_solver_config(**csp_solver_config)
@@ -254,7 +255,6 @@ def do_solve(variables,
     return do_solve_result
 
 
-
 class ConfigurationException(Exception):
     pass
 
@@ -263,7 +263,7 @@ def get_valid_csp_solver_config(
         sugarjar_path,
         minisat_path=None,
         tmp_folder=None
-    ):
+        ):
 
     if (not sugarjar_path or
         not os.path.exists(sugarjar_path)):
@@ -327,12 +327,13 @@ def get_parser():
     parser = argparse.ArgumentParser()
 
     def existing_file(file_name):
+        msg = "File does not exist: {0}".format(file_name)
         if not file_name:
-            raise argparse.ArgumentTypeError("File does not exist: {0}".format(file_name))
+            raise argparse.ArgumentTypeError(msg)
         if not os.path.exists(file_name):
-            raise argparse.ArgumentTypeError("File does not exist: {0}".format(file_name))
+            raise argparse.ArgumentTypeError(msg)
         if not os.path.isfile(file_name):
-            raise argparse.ArgumentTypeError("File does not exist: {0}".format(file_name))
+            raise argparse.ArgumentTypeError(msg)
         return os.path.abspath(file_name)
 
     parser.add_argument('-c', '--csp-file',
@@ -348,7 +349,7 @@ def get_parser():
     return add_csp_config_params_to_argparse_parser(parser)
 
 
-def run(args):
+def main(args=sys.argv[1:]):
     parser = get_parser()
     parsed_args = parser.parse_args(args)
 
@@ -375,8 +376,3 @@ def run(args):
         import pprint
         pprint.pprint(result)
         print
-
-
-if __name__ == '__main__':
-    import sys
-    run(sys.argv[1:])

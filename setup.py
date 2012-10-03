@@ -12,7 +12,13 @@ setup(
     description='A wrapper library for python to solve a Constraint Satisfaction Problem with sugar (http://bach.istc.kobe-u.ac.jp/sugar/) and minisat2 (http://minisat.se/MiniSat.html)',
     long_description=__doc__,
     py_modules= ['csp_solver'],
-    scripts=['csp_solver.py'],
+
+    entry_points={
+        'console_scripts': [
+            'csp_solver = csp_solver:main',
+        ],
+    },
+
     install_requires=[
         'argparse',
         'which',

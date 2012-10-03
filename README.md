@@ -22,9 +22,10 @@ available in https://github.com/dmr/csp-solver/blob/master/Makefile.
 
 Test the installation
 
-    wget http://github.com/dmr/csp-solver/raw/master/tests/simple_example.csp
+    which minisat # minisat must be installed
+    wget http://github.com/dmr/csp-solver/raw/master/tests/simple_example_solvable.csp
     wget http://github.com/dmr/csp-solver/raw/master/tests/sugar-v1-15-0.jar
-    csp_solver.py -c simple_example.csp --sugar-jar sugar-v1-15-0.jar
+    csp_solver.py -c simple_example_solvable.csp --sugar-jar sugar-v1-15-0.jar
 
 
 Development

@@ -16,7 +16,7 @@ from csp_solver import (
     weighted_sum_to_csp,
     get_valid_csp_solver_config,
     solve_csp,
-    run
+    main
 )
 
 
@@ -180,7 +180,7 @@ class TestCli(unittest.TestCase):
         assert parsed_args == expected_result, parsed_args
 
     def test_cli_prints_results_satisfiable(self):
-        run(
+        main(
             '-c {0} --sugar-jar {1}'.format(
                 sample_csp_file_solvable,
                 sugarjar_path
@@ -188,7 +188,7 @@ class TestCli(unittest.TestCase):
         )
 
     def test_cli_prints_results_satisfiable(self):
-        run(
+        main(
             '-c {0} --sugar-jar {1}'.format(
                 sample_csp_file_not_solvable,
                 sugarjar_path
