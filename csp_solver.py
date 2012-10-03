@@ -278,13 +278,16 @@ def get_valid_csp_solver_config(
             print ("Passed minisat binary does "
                 "not exist"),minisat_path, \
                 "Trying PATH"
-        try:
-            minisat_path = which.which("minisat")
-        except which.WhichError as exc:
-            raise ConfigurationException(
-                "Please pass an existing minisat2 executable "
-                "or install minisat2 as 'minisat' in PATH"
-            )
+        if os.path.exists('minisat'):
+            minisat_path = os.path.abspath('minisat')
+        else:
+            try:
+                minisat_path = which.which("minisat")
+            except which.WhichError as exc:
+                raise ConfigurationException(
+                    "Please pass an existing minisat2 executable "
+                    "or install minisat2 as 'minisat' in PATH"
+                )
 
     if tmp_folder:
         folder = os.path.abspath(tmp_folder)
