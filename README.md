@@ -12,17 +12,17 @@ Csp-Solver can be installed via pip from this repository.
     pip install git+http://github.com/dmr/csp-solver.git#egg=csp-solver
 
 In addition to the python package, an installation of minisat2 is needed in PATH (or passed to CLI).
-minisat2 can be retreived from https://github.com/niklasso/minisat.git.
 
-To install minisat with user rights on a standard linux system you can use:
+A version of minisat2 can be obtained from
 
-    make minisat
+    wget http://minisat.se/downloads/minisat2-070721.zip
 
-available in https://github.com/dmr/csp-solver/blob/master/Makefile.
+To compile a minisat binary, follow:
+
+    unzip minisat2-070721.zip && cd minisat/core && make
 
 Test the installation
 
-    which minisat # minisat must be installed
     wget http://github.com/dmr/csp-solver/raw/master/tests/simple_example_solvable.csp
     wget http://github.com/dmr/csp-solver/raw/master/tests/sugar-v1-15-0.jar
     csp_solver.py -c simple_example_solvable.csp --sugar-jar sugar-v1-15-0.jar
