@@ -132,7 +132,7 @@ def solve_csp(
 
         # 3. execute minisat2/solve.
         # 800 Actors range_size 15 needs more than 2GB memory!
-        minisat_cmd = [minisat_path, '-verbosity=0', cnf_file, out_file]
+        minisat_cmd = [minisat_path, cnf_file, out_file]
         b = time.time()
 
         process = subprocess.Popen(
