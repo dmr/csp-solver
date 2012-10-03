@@ -140,7 +140,7 @@ def solve_csp(
             stdout=subprocess.PIPE,stderr=subprocess.PIPE
         )
         minisat_resp, minisat_resp_stderr = process.communicate()
-        if process.returncode != 0:
+        if process.returncode not in [0, 10]:
             print "Minisat returned {0}".format(process.returncode)
             print minisat_resp_stderr
             print minisat_resp
