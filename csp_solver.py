@@ -135,30 +135,30 @@ def solve_csp(
         minisat_cmd = [minisat_path, '-verbosity=0', cnf_file, out_file]
         b = time.time()
 
-        try:
-            minisat_resp = subprocess.check_output(
-                minisat_cmd, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as exc:
-            print exc.cmd
-            print exc.returncode
-            print exc.message
-            raise
+        process = subprocess.Popen(
+            minisat_cmd,
+            stdout=subprocess.PIPE,stderr=subprocess.PIPE
+        )
+        minisat_resp, minisat_resp_stderr = process.communicate()
+        if process.returncode != 0:
+            print "Minisat returned {0}".format(process.returncode)
+            print minisat_resp_stderr
+            print minisat_resp
+            raise Exception("Error executing minisat!")
 
         result['minisat_time'] = time.time() - b
 
-        solvable_bool = minisat_resp.splitlines()[-1]
+        solvable_bool = minisat_resp.splitlines()[0]
         if solvable_bool == 'SATISFIABLE':
             if not quiet:
                 print "minisat reported SATISFIABLE"
-                # minisat prints statistics to std_err
-                print minisat_resp
 
             result['satisfiable_bool'] = True
 
-            def get_cpu_time(minisat_resp):
-                third_last_line = minisat_resp.splitlines()[-3:-2][0]
+            def get_cpu_time(resp):
+                third_last_line = resp.splitlines()[-2:-1][0]
                 return float(third_last_line.split()[-2:-1][0])
-            result['minisat_cpu_time'] = get_cpu_time(minisat_resp)
+            result['minisat_cpu_time'] = get_cpu_time(minisat_resp_stderr)
             #TODO: convert to timedelta?
 
             # calculate and show result
