@@ -9,8 +9,12 @@ setup(
     license='MIT',
     author='Daniel Rech',
     author_email='danielmrech@gmail.com',
-    description='A wrapper library for python to solve a Constraint Satisfaction Problem with sugar (http://bach.istc.kobe-u.ac.jp/sugar/) and minisat2 (http://minisat.se/MiniSat.html)',
-    long_description=__doc__,
+    description=(
+        'A wrapper library for python to solve a Constraint '
+        'Satisfaction Problem with sugar '
+        '(http://bach.istc.kobe-u.ac.jp/sugar/) and minisat2 '
+        '(http://minisat.se/MiniSat.html)'),
+    long_description=open('README.md').read(),
     py_modules= ['csp_solver'],
 
     entry_points={
@@ -22,8 +26,11 @@ setup(
     install_requires=[
         'argparse',
         'which',
-        'subprocess32'
+        'subprocess32',
+
+        'spec' # for tests
     ],
+
     zip_safe=False,
     platforms='any',
     classifiers=[

@@ -9,7 +9,7 @@ Installation
 
 Csp-Solver can be installed via pip from this repository.
 
-    pip install git+http://github.com/dmr/csp-solver.git#egg=csp-solver
+    pip install git+http://github.com/dmr/csp-solver.git#egg=csp_solver
 
 In addition to the python package, an installation of minisat2 is needed in PATH (or passed to CLI).
 
@@ -32,7 +32,7 @@ Development
 -----------
 
     git clone http://github.com/dmr/csp-solver.git
-    cd csp-solver
+    cd csp_solver
     python setup.py test
     python setup.py develop
 

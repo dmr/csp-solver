@@ -1,12 +1,7 @@
 language: python
-python:
-  - "2.7"
+python: "2.7"
 
-install:
-  - python setup.py -q install
-  - pip install -r requirements_test.txt --use-mirrors
-
-#script: LD_LIBRARY_PATH="$HOME/minisat/lib:$LD_LIBRARY_PATH" PATH="$HOME/bin:$PATH" python setup.py test
+install: python setup.py -q install
 script: python setup.py test
 
 before_install:

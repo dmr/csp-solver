@@ -8,7 +8,10 @@ import argparse
 import which
 
 # import backport instead of packaged version
-import subprocess32 as subprocess
+try:
+    import subprocess32 as subprocess
+except ImportError:
+    import subprocess
 
 
 def time_diff(func):
@@ -95,14 +98,15 @@ def solve_csp(
     minisat_path = csp_solver_config['minisat_path']
 
     # 2. .csp -> CNF
-    cnf_file = os.path.join(tmp_folder, u'{0}.cnf'.format(unique_repr))
-    map_file = os.path.join(tmp_folder, u'{0}.map'.format(unique_repr))
+    cnf_file = os.path.join(tmp_folder, '{0}.cnf'.format(unique_repr))
+    map_file = os.path.join(tmp_folder, '{0}.map'.format(unique_repr))
 
     # ram://1048576 -> 512MB --> 600 Actors range_size 15
     # CNF needs more than 512 MB!
 
-    sugar_encode_cmd = ['java', u'-jar', sugarjar_path,
-                        u'-encode', csp_file, cnf_file, map_file]
+    sugar_encode_cmd = [
+        'java', '-jar', sugarjar_path,
+        '-encode', csp_file, cnf_file, map_file]
     b = time.time()
     sugar_encode_resp_std_out = subprocess.check_output(sugar_encode_cmd)
     csp_to_cnf_time = time.time() - b

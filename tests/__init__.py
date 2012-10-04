@@ -1,2 +1,2 @@
 #!/usr/bin/env python
-from test_csp_solver import *
+from tests.test_csp_solver import *
