@@ -245,13 +245,17 @@ def do_solve(
     )
 
     do_solve_result.update(solve_csp_result)
+    do_solve_result['overall_solve_csp_time'] = solve_csp_time
 
     if not quiet:
-        print "Operating system overhead:", solve_csp_time,\
-            do_solve_result['minisat_time'] \
-                if 'minisat_time' in do_solve_result \
+        print "overall_solve_csp_time: {0}".format(
+            do_solve_result['overall_solve_csp_time']
+            ), \
+            'minisat_time: {0}'.format(
+                do_solve_result['minisat_time']
+                if 'minisat_time' in do_solve_result
                 else ''
-    do_solve_result['overall_solve_csp_time'] = solve_csp_time
+            )
 
     if remove_tmp_files:
         os.remove(csp_file)
@@ -315,12 +319,12 @@ def add_csp_config_params_to_argparse_parser(parser):
     parser.add_argument('-t','--tmp-folder', action="store",
         type=str,
         help=('Location of folder for temporary files. '
-              'Might be on a RAM-disk for performance')
+              'Choose a RAM-disk for performance')
     )
     parser.add_argument('--minisat', action="store",
         type=str,
         help=("minisat2 binary to use, "
-              "default: look in PATH")
+              "default: 'minisat' in $PATH")
     )
     parser.add_argument('--sugar-jar', action="store",
         type=str,
@@ -345,12 +349,12 @@ def get_parser():
 
     parser.add_argument('-c', '--csp-file',
         action="append",
-        type=existing_file, help="CSP file",
+        type=existing_file, help="CSP file with the problem definition",
         required=True
     )
     parser.add_argument('-k','--keep-tmpfiles',
         action="store_true",
-        help="Temporary files are stores after program execution"
+        help="Store result after program execution"
     )
 
     return add_csp_config_params_to_argparse_parser(parser)
