@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import print_function
+
 import functools
 import hashlib
 import sys
@@ -117,7 +119,7 @@ def solve_csp(
 
     if sugar_encode_resp_std_out:
         if not quiet:
-            print "sugar reported UNSATISFIABLE"
+            print("sugar reported UNSATISFIABLE")
 
         assert sugar_encode_resp_std_out == 's UNSATISFIABLE\n', \
                 sugar_encode_resp_std_out
@@ -128,8 +130,8 @@ def solve_csp(
         result['cnf_file_size'] = get_file_size(cnf_file)
         result['map_file_size'] = get_file_size(map_file)
         if not quiet:
-            print "cnf file size:", result['cnf_file_size']
-            print "map file size:", result['map_file_size']
+            print("cnf file size:", result['cnf_file_size'])
+            print("map file size:", result['map_file_size'])
 
         out_file = os.path.join(tmp_folder,
             '{0}.out'.format(unique_repr))
@@ -145,9 +147,9 @@ def solve_csp(
         )
         minisat_resp, minisat_resp_stderr = process.communicate()
         if process.returncode not in [0, 10]:
-            print "Minisat returned {0}".format(process.returncode)
-            print minisat_resp_stderr
-            print minisat_resp
+            print("Minisat returned {0}".format(process.returncode))
+            print(minisat_resp_stderr)
+            print(minisat_resp)
             raise Exception("Error executing minisat!")
 
         result['minisat_time'] = time.time() - b
@@ -155,7 +157,7 @@ def solve_csp(
         solvable_bool = minisat_resp.splitlines()[0]
         if solvable_bool == 'SATISFIABLE':
             if not quiet:
-                print "minisat reported SATISFIABLE"
+                print("minisat reported SATISFIABLE")
 
             result['satisfiable_bool'] = True
 
@@ -173,7 +175,7 @@ def solve_csp(
             decode_result = subprocess.check_output(sugar_decode_cmd)
             assert decode_result, "Decode should return text"
             if not quiet:
-                print decode_result
+                print(decode_result)
 
             # second way to check if satisfiable
             #last_word_of_first_line = stdout.split('\n')[0].split()[1]
@@ -188,7 +190,7 @@ def solve_csp(
                 os.remove(out_file)
 
         else:
-            print "minisat reported UNSATISFIABLE"
+            print("minisat reported UNSATISFIABLE")
 
             result['satisfiable_bool'] = False
             result['solution_list'] = []
@@ -211,7 +213,7 @@ def do_solve(
     tmp_folder = csp_solver_config['tmp_folder']
 
     if not quiet:
-        print "Using tmp folder", tmp_folder
+        print("Using tmp folder", tmp_folder)
 
     b = time.time()
     csp_content = weighted_sum_to_csp(
@@ -248,14 +250,14 @@ def do_solve(
     do_solve_result['overall_solve_csp_time'] = solve_csp_time
 
     if not quiet:
-        print "overall_solve_csp_time: {0}".format(
+        print("overall_solve_csp_time: {0}".format(
             do_solve_result['overall_solve_csp_time']
-            ), \
+            ),
             'minisat_time: {0}'.format(
                 do_solve_result['minisat_time']
                 if 'minisat_time' in do_solve_result
                 else ''
-            )
+            ))
 
     if remove_tmp_files:
         os.remove(csp_file)
@@ -283,9 +285,11 @@ def get_valid_csp_solver_config(
         pass
     else:
         if minisat_path:
-            print ("Passed minisat binary does "
-                "not exist"),minisat_path, \
+            print(
+                ("Passed minisat binary does "
+                "not exist"),minisat_path,
                 "Trying PATH"
+            )
         if os.path.exists('minisat'):
             minisat_path = os.path.abspath('minisat')
         else:
@@ -371,7 +375,7 @@ def main(args=sys.argv[1:]):
     )
 
     for csp_file in parsed_args.csp_file:
-        print ">>> Processing",csp_file
+        print(">>> Processing",csp_file)
         unique_repr = u'{0}_{1}'.format(
             os.path.basename(csp_file), #split path
             time.time())
@@ -382,8 +386,10 @@ def main(args=sys.argv[1:]):
             quiet=True,
             csp_solver_config=csp_solver_config
         )
-        print "SATISFIABLE" if result.pop('satisfiable_bool')\
-        else "UNSATISFIABLE!", 'Took', solve_csp_time
+        print(
+            "SATISFIABLE" if result.pop('satisfiable_bool')\
+            else "UNSATISFIABLE!", 'Took', solve_csp_time
+        )
+
         import pprint
         pprint.pprint(result)
-        print

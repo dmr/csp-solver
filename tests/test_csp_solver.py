@@ -224,7 +224,7 @@ class TestSolveCsp(unittest.TestCase):
             csp_solver_config=csp_solver_config
         )
         self.failUnlessEqual(len(result),2)
-        print result[0]
+        #print result[0]
 
         self.failUnlessEqual(
             set(result[1].keys()),
@@ -250,7 +250,7 @@ class TestSolveCsp(unittest.TestCase):
             csp_solver_config=csp_solver_config
         )
         self.failUnlessEqual(len(result),2)
-        print result[0]
+        #print result[0]
 
         # csp to cnf reports unsolvable
         # --> minisat is not triggered!
