@@ -5,6 +5,7 @@ install: python setup.py -q install
 script: python setup.py test
 
 before_install:
+ - pip install spec
  - wget http://minisat.se/downloads/minisat2-070721.zip
  - unzip minisat2-070721.zip
  - cd minisat/core && make

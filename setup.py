@@ -28,7 +28,7 @@ setup(
         'which',
         'subprocess32',
 
-        'spec' # for tests
+        #'spec' # for tests
     ],
 
     zip_safe=False,
